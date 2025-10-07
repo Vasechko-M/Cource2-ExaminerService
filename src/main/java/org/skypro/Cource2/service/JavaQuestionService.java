@@ -46,7 +46,7 @@ public class JavaQuestionService implements QuestionServices {
     @Override
     public Question getRandomQuestion() {
         if (questions.isEmpty()) {
-            throw new NoSuchElementException("Нет вопросов для выбора");
+            throw new NoSuchElementException("Нет вопросов для выбора"); //здесь тоже можно свое исключение?
         }
         List<Question> list = new ArrayList<>(questions);
         int index = random.nextInt(list.size());

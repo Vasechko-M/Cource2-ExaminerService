@@ -27,7 +27,6 @@ public class ExaminerServiceImpl implements ExaminerService {
                     "Запрошено больше вопросов, чем доступно. Вы запросили: "+ amount + ". Доступно: " + allQuestions.size());
         }
 
-
         Set<Question> result = new HashSet<>();
 
         List<Question> questionsList = new ArrayList<>(allQuestions);
@@ -36,7 +35,6 @@ public class ExaminerServiceImpl implements ExaminerService {
             Question randomQuestion = questionService.getRandomQuestion();
             result.add(randomQuestion);
         }
-
         return result;
     }
 }

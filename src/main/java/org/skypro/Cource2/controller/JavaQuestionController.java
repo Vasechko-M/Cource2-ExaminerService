@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -33,7 +34,7 @@ public class JavaQuestionController {
                 .anyMatch(x -> x.getQuestion().equals(q.getQuestion()) && x.getAnswer().equals(q.getAnswer()));
 
         if (exists) {
-            return ResponseEntity.status(409).body("Этот вопрос с таким ответом уже был.");
+            return ResponseEntity.status(409).body("Этот вопрос с таким ответом уже был."); //можно ли здесь заменить на кастомное исключение?
         }
 
         Question added = service.add(q);
@@ -52,7 +53,7 @@ public class JavaQuestionController {
         if (removed != null) {
             return ResponseEntity.ok("Вопрос: " + question + ", Ответ: " + answer + ". Удален");
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Вопрос не найден"); //можно ли здесь заменить на кастомное исключение? такое же сделать в поиске
         }
     }
     /**
@@ -65,15 +66,26 @@ public class JavaQuestionController {
                         || q.getAnswer().toLowerCase().contains(text.toLowerCase()))
                 .toList();
         if (results.isEmpty()) {
-            return ResponseEntity.ok("Поиск не дал результатов");
+            return ResponseEntity.ok("Поиск не дал результатов"); //можно ли здесь заменить на кастомное исключение? такое же сделать в эндопоинте удаления
         }
         return ResponseEntity.ok(results);
     }
+    /**
+     * /exam/java/random
+     */
 
-
+    @GetMapping("/random")
+    public ResponseEntity<?> getRandomQuestion() {
+        try {
+            Question randomQuestion = service.getRandomQuestion();
+            return ResponseEntity.ok(randomQuestion);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Вопросы отсутствуют");
+        }
+    }
     @GetMapping
     public Collection<Question> getQuestions() {
         return service.getAll();
     }
-
 }
