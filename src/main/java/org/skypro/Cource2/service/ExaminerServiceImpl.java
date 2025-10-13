@@ -19,6 +19,9 @@ public class ExaminerServiceImpl implements ExaminerService {
 
     @Override
     public Collection<Question> getQuestions(int amount) {
+        if (amount < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Вопросов должно быть больше 0");
+        }
         Collection<Question> allQuestions = questionService.getAll();
 
         if (amount > allQuestions.size()) {
