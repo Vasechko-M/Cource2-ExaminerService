@@ -1,6 +1,8 @@
 package org.skypro.Cource2.controller;
 
 import org.skypro.Cource2.domain.Question;
+import org.skypro.Cource2.exception.QuestionAlreadyExistsException;
+import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.skypro.Cource2.service.QuestionServices;
 
 import org.springframework.http.HttpStatus;
@@ -29,16 +31,12 @@ public class JavaQuestionController {
     @GetMapping("/add")
     public ResponseEntity<?> addQuestion(@RequestParam String question,
                                          @RequestParam String answer) {
-        Question q = new Question(question, answer);
-        boolean exists = service.getAll().stream()
-                .anyMatch(x -> x.getQuestion().equals(q.getQuestion()) && x.getAnswer().equals(q.getAnswer()));
-
-        if (exists) {
-            return ResponseEntity.status(409).body("Этот вопрос с таким ответом уже был."); //можно ли здесь заменить на кастомное исключение?
+        try {
+            Question added = service.add(question, answer);
+            return ResponseEntity.ok(added);
+        } catch (QuestionAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
-
-        Question added = service.add(q);
-        return ResponseEntity.ok(added);
     }
 
     /**
@@ -47,13 +45,12 @@ public class JavaQuestionController {
     @GetMapping("/remove")
     public ResponseEntity<String> removeQuestion(@RequestParam String question,
                                                  @RequestParam String answer) {
-        Question toRemove = new Question(question, answer);
-
-        Question removed = service.remove(toRemove);
-        if (removed != null) {
+        try {
+            Question toRemove = new Question(question, answer);
+            service.remove(toRemove);
             return ResponseEntity.ok("Вопрос: " + question + ", Ответ: " + answer + ". Удален");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Вопрос не найден"); //можно ли здесь заменить на кастомное исключение? такое же сделать в поиске
+        } catch (QuestionsNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
     /**
@@ -61,14 +58,12 @@ public class JavaQuestionController {
      */
     @GetMapping("/find")
     public ResponseEntity<?> findQuestions(@RequestParam String text) {
-        List<Question> results = service.getAll().stream()
-                .filter(q -> q.getQuestion().toLowerCase().contains(text.toLowerCase())
-                        || q.getAnswer().toLowerCase().contains(text.toLowerCase()))
-                .toList();
-        if (results.isEmpty()) {
-            return ResponseEntity.ok("Поиск не дал результатов"); //можно ли здесь заменить на кастомное исключение? такое же сделать в эндопоинте удаления
+        try {
+            List<Question> results = service.findQuestions(text);
+            return ResponseEntity.ok(results);
+        } catch (QuestionsNotFoundException e) {
+            return ResponseEntity.ok(e.getMessage());
         }
-        return ResponseEntity.ok(results);
     }
     /**
      * /exam/java/random
@@ -79,9 +74,8 @@ public class JavaQuestionController {
         try {
             Question randomQuestion = service.getRandomQuestion();
             return ResponseEntity.ok(randomQuestion);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Вопросы отсутствуют");
+        } catch (QuestionsNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
     @GetMapping

@@ -3,6 +3,7 @@ package org.skypro.Cource2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
+import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.skypro.Cource2.service.JavaQuestionService;
 
 import java.util.*;
@@ -52,8 +53,9 @@ public class JavaQuestionServiceTests {
     @Test
     public void testRemoveNonExistingQuestion() {
         Question question = new Question("Отсутствующий вопрос", "Ответ");
-        Question removed = javaQuestionService.remove(question);
-        assertNull(removed, "Метод должен вернуть null, если вопрос не был найден");
+        assertThrows(QuestionsNotFoundException.class, () -> {
+            javaQuestionService.remove(question);
+        }, "При удалении несуществующего вопроса должно выбрасываться QuestionsNotFoundException");
     }
 
     @Test
@@ -78,8 +80,8 @@ public class JavaQuestionServiceTests {
             javaQuestionService.remove(q);
         }
 
-        assertThrows(NoSuchElementException.class, () -> javaQuestionService.getRandomQuestion(),
-                "При отсутствии вопросов должно выбрасываться исключение");
+        assertThrows(QuestionsNotFoundException.class, () -> javaQuestionService.getRandomQuestion(),
+                "При отсутствии вопросов должно выбрасываться QuestionsNotFoundException");
     }
 
 }

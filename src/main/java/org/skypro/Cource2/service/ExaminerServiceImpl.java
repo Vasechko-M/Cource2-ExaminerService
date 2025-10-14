@@ -32,7 +32,10 @@ public class ExaminerServiceImpl implements ExaminerService {
 
         Set<Question> result = new HashSet<>();
 
-        List<Question> questionsList = new ArrayList<>(allQuestions);
+//        List<Question> questionsList = new ArrayList<>(allQuestions);
+//        Collections.shuffle(questionsList, random);
+//
+//        return questionsList.subList(0, amount);
 
         while (result.size() < amount) {
             Question randomQuestion = questionService.getRandomQuestion();
