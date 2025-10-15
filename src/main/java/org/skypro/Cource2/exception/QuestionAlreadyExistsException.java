@@ -5,4 +5,3 @@ public class QuestionAlreadyExistsException extends RuntimeException {
         super(message);
     }
 }
-

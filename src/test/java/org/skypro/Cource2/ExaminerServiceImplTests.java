@@ -3,6 +3,8 @@ package org.skypro.Cource2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
+import org.skypro.Cource2.exception.QuestionBadRequestException;
+import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.skypro.Cource2.service.ExaminerServiceImpl;
 import org.skypro.Cource2.service.QuestionServices;
 import org.springframework.http.HttpStatus;
@@ -37,11 +39,11 @@ public class ExaminerServiceImplTests {
         when(questionService.getAll()).thenReturn(questions);
 
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+        QuestionsNotFoundException thrown = assertThrows(QuestionsNotFoundException.class, () -> {
             examinerService.getQuestions(3);
         });
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Запрошено больше вопросов"));
+
+        assertTrue(thrown.getMessage().contains("Запрошено больше вопросов"));
     }
 
 
@@ -137,11 +139,10 @@ public class ExaminerServiceImplTests {
     @Test
     public void testGetQuestions_NegativeAmount_ThrowsException() {
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+        QuestionBadRequestException exception = assertThrows(QuestionBadRequestException.class, () -> {
             examinerService.getQuestions(-1);
         });
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Вопросов должно быть больше 0"));
+        assertTrue(exception.getMessage().contains("Количество вопросов должно быть положительным"));
 
         verify(questionService, never()).getAll();
     }

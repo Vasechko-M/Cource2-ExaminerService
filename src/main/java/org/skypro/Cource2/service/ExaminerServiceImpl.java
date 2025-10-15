@@ -1,6 +1,8 @@
 package org.skypro.Cource2.service;
 
 import org.skypro.Cource2.domain.Question;
+import org.skypro.Cource2.exception.QuestionBadRequestException;
+import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,22 +22,17 @@ public class ExaminerServiceImpl implements ExaminerService {
     @Override
     public Collection<Question> getQuestions(int amount) {
         if (amount < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Вопросов должно быть больше 0");
+            throw new QuestionBadRequestException("Количество вопросов должно быть положительным");
         }
         Collection<Question> allQuestions = questionService.getAll();
 
         if (amount > allQuestions.size()) {
 
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Запрошено больше вопросов, чем доступно. Вы запросили: "+ amount + ". Доступно: " + allQuestions.size());
+            throw new QuestionsNotFoundException(
+                    "Запрошено больше вопросов, чем доступно. Запрошено: " + amount + ". Доступно: " + allQuestions.size());
         }
 
         Set<Question> result = new HashSet<>();
-
-//        List<Question> questionsList = new ArrayList<>(allQuestions);
-//        Collections.shuffle(questionsList, random);
-//
-//        return questionsList.subList(0, amount);
 
         while (result.size() < amount) {
             Question randomQuestion = questionService.getRandomQuestion();

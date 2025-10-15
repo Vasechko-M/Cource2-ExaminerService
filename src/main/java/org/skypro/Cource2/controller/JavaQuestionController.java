@@ -1,19 +1,12 @@
 package org.skypro.Cource2.controller;
 
 import org.skypro.Cource2.domain.Question;
-import org.skypro.Cource2.exception.QuestionAlreadyExistsException;
-import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.skypro.Cource2.service.QuestionServices;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/exam/java")
@@ -25,59 +18,37 @@ public class JavaQuestionController {
         this.service = service;
     }
 
-    /**
-     * /exam/java/add?question=...&answer=...
-     */
+
     @GetMapping("/add")
-    public ResponseEntity<?> addQuestion(@RequestParam String question,
-                                         @RequestParam String answer) {
-        try {
-            Question added = service.add(question, answer);
-            return ResponseEntity.ok(added);
-        } catch (QuestionAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public String addQuestion(
+            @RequestParam @NotBlank(message = "Вопрос не может быть пустым") String question,
+            @RequestParam @NotBlank(message = "Ответ не может быть пустым") String answer) {
+        Question addedQuestion = service.add(new Question(question, answer));
+        return "Добавлен вопрос: " + addedQuestion.getQuestion() + " и ответ: " + addedQuestion.getAnswer();
     }
 
-    /**
-     * /exam/java/remove?question=...&answer=...
-     */
+
     @GetMapping("/remove")
-    public ResponseEntity<String> removeQuestion(@RequestParam String question,
-                                                 @RequestParam String answer) {
-        try {
-            Question toRemove = new Question(question, answer);
-            service.remove(toRemove);
-            return ResponseEntity.ok("Вопрос: " + question + ", Ответ: " + answer + ". Удален");
-        } catch (QuestionsNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public String removeQuestion(
+            @RequestParam @NotBlank(message = "Вопрос не может быть пустым") String question,
+            @RequestParam @NotBlank(message = "Ответ не может быть пустым") String answer) {
+        Question toRemove = new Question(question, answer);
+        service.remove(toRemove);
+        return "Вопрос: " + question + ", Ответ: " + answer + ". Удален";
     }
-    /**
-     * /exam/java/find?text=...
-     */
+
+
     @GetMapping("/find")
-    public ResponseEntity<?> findQuestions(@RequestParam String text) {
-        try {
-            List<Question> results = service.findQuestions(text);
-            return ResponseEntity.ok(results);
-        } catch (QuestionsNotFoundException e) {
-            return ResponseEntity.ok(e.getMessage());
-        }
+    public List<Question> findQuestions(@RequestParam @NotBlank(message = "Текст поиска не может быть пустым") String text) {
+        return service.findQuestions(text);
     }
-    /**
-     * /exam/java/random
-     */
+
 
     @GetMapping("/random")
-    public ResponseEntity<?> getRandomQuestion() {
-        try {
-            Question randomQuestion = service.getRandomQuestion();
-            return ResponseEntity.ok(randomQuestion);
-        } catch (QuestionsNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public Question getRandomQuestion() {
+        return service.getRandomQuestion();
     }
+
     @GetMapping
     public Collection<Question> getQuestions() {
         return service.getAll();
