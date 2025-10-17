@@ -33,12 +33,13 @@ public class ExaminerServiceImpl implements ExaminerService {
 
     @Override
     public Collection<Question> getQuestions(int amount) {
-        List<Question> allQuestions = new ArrayList<>();
-        allQuestions.addAll(javaQuestionsService.getAll());
-        allQuestions.addAll(mathQuestionsService.getAll());
+
         if (amount < 0) {
             throw new QuestionBadRequestException("Количество вопросов должно быть положительным");
         }
+        List<Question> allQuestions = new ArrayList<>();
+        allQuestions.addAll(javaQuestionsService.getAll());
+        allQuestions.addAll(mathQuestionsService.getAll());
         if (amount > allQuestions.size()) {
             throw new QuestionsNotFoundException(
                     "Запрошено больше вопросов, чем доступно. Запрошено: " + amount + ". Доступно: " + allQuestions.size());
