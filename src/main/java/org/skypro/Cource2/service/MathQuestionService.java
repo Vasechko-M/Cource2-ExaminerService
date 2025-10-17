@@ -3,37 +3,38 @@ package org.skypro.Cource2.service;
 import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.exception.QuestionAlreadyExistsException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
-import org.skypro.Cource2.repository.JavaQuestionRepository;
+import org.skypro.Cource2.repository.MathQuestionRepository;
+import org.skypro.Cource2.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service("javaQuestionService")
+@Service("mathQuestionService")
+public class MathQuestionService implements QuestionServices {
 
-public class JavaQuestionService implements QuestionServices {
-
-    private final JavaQuestionRepository questionRepository;
+    private final MathQuestionRepository questionRepository;
     private final Random random = new Random();
 
-
-    public JavaQuestionService(JavaQuestionRepository questionRepository) {
+    public MathQuestionService(MathQuestionRepository questionRepository) {
         this.questionRepository = questionRepository;
-        questionRepository.add(new Question("Что такое JVM?", "Java Virtual Machine"));
-        questionRepository.add(new Question("Как объявить переменную типа int?", "int x;"));
-        questionRepository.add(new Question("Как создать объект класса?", "new ClassName()"));
-        questionRepository.add(new Question("Что значит 'static'?", "Статический член класса"));
-        questionRepository.add(new Question("Как написать однострочный комментарий?", "// комментарий"));
+
+        questionRepository.add(new Question("Что такое сумма 2 + 2?", "4"));
+        questionRepository.add(new Question("Как найти площадь круга?", "π * r^2"));
+        questionRepository.add(new Question("Что такое производная?", "Модель скорости изменения функции"));
+        questionRepository.add(new Question("Что такое интеграл?", "Общая сумма или площадь под графиком"));
+        questionRepository.add(new Question("Как решить уравнение x + 3 = 7?", "x = 4"));
     }
 
     @Override
     public Question add(String question, String answer) {
         Question q = new Question(question, answer);
-        return q;
+        return add(q);
     }
 
     @Override
     public Question add(Question question) {
+        // Проверка на существование
         Collection<Question> allQuestions = questionRepository.getAll();
         boolean exists = allQuestions.stream()
                 .anyMatch(x -> x.getQuestion().equals(question.getQuestion()) && x.getAnswer().equals(question.getAnswer()));
@@ -68,6 +69,7 @@ public class JavaQuestionService implements QuestionServices {
         int index = random.nextInt(list.size());
         return list.get(index);
     }
+
     public List<Question> findQuestions(String text) {
         Collection<Question> allQuestions = questionRepository.getAll();
         List<Question> results = allQuestions.stream()
