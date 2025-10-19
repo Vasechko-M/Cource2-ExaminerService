@@ -4,21 +4,20 @@ import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.service.QuestionServices;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+
 import java.util.Collection;
 import java.util.List;
 
 @RestController
-@RequestMapping("/exam/java")
-public class JavaQuestionController {
+@RequestMapping("/exam/math")
+public class MathQuestionController {
 
     private final QuestionServices service;
 
-    public JavaQuestionController(@Qualifier("javaQuestionService") QuestionServices service) {
+    public MathQuestionController(@Qualifier("mathQuestionService") QuestionServices service) {
         this.service = service;
     }
-
 
     @GetMapping("/add")
     public String addQuestion(
@@ -27,7 +26,6 @@ public class JavaQuestionController {
         Question addedQuestion = service.add(new Question(question, answer));
         return "Добавлен вопрос: " + addedQuestion.getQuestion() + " и ответ: " + addedQuestion.getAnswer();
     }
-
 
     @GetMapping("/remove")
     public String removeQuestion(
@@ -38,12 +36,10 @@ public class JavaQuestionController {
         return "Вопрос: " + question + ", Ответ: " + answer + ". Удален";
     }
 
-
     @GetMapping("/find")
     public List<Question> findQuestions(@RequestParam @NotBlank(message = "Текст поиска не может быть пустым") String text) {
         return service.findQuestions(text);
     }
-
 
     @GetMapping("/random")
     public Question getRandomQuestion() {

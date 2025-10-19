@@ -1,9 +1,11 @@
-package org.skypro.Cource2;
+package org.skypro.Cource2.serviceTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
+import org.skypro.Cource2.exception.QuestionAlreadyExistsException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
+import org.skypro.Cource2.repository.JavaQuestionRepository;
 import org.skypro.Cource2.service.JavaQuestionService;
 
 import java.util.*;
@@ -16,7 +18,7 @@ public class JavaQuestionServiceTests {
 
     @BeforeEach
     public void setUp() {
-        javaQuestionService = new JavaQuestionService();
+        javaQuestionService = new JavaQuestionService(new JavaQuestionRepository());
     }
 
     @Test
@@ -28,9 +30,9 @@ public class JavaQuestionServiceTests {
 
     @Test
     public void testAddQuestionByStrings() {
-        Question added = javaQuestionService.add("Новый вопрос?", "Новый ответ");
+        Question newQuestion = javaQuestionService.add(new Question("Новый вопрос?", "Новый ответ"));
         Collection<Question> all = javaQuestionService.getAll();
-        assertTrue(all.contains(added), "Коллекция должна содержать добавленный вопрос");
+        assertTrue(all.contains(newQuestion), "Коллекция должна содержать добавленный вопрос");
     }
 
     @Test
@@ -84,4 +86,42 @@ public class JavaQuestionServiceTests {
                 "При отсутствии вопросов должно выбрасываться QuestionsNotFoundException");
     }
 
+    @Test
+    public void testAddNewQuestion() {
+        String qText = "Что такое JVM?";
+        String aText = "Java Virtual Machine";
+
+        Question newQuestion = javaQuestionService.add(qText, aText);
+
+        assertNotNull(newQuestion);
+        assertEquals(qText, newQuestion.getQuestion());
+        assertEquals(aText, newQuestion.getAnswer());
+        assertTrue(javaQuestionService.getAll().contains(newQuestion));
+    }
+
+    @Test
+    public void testAddDuplicateQuestionThrows() {
+        Question existing = javaQuestionService.getAll().iterator().next();
+        assertThrows(QuestionAlreadyExistsException.class, () -> {
+            javaQuestionService.add(existing);
+        });
+    }
+    @Test
+    public void testFindQuestionsReturnsMatching() {
+        String searchText = "Java";
+        List<Question> results = javaQuestionService.findQuestions(searchText);
+        assertFalse(results.isEmpty());
+        for (Question q : results) {
+            String combined = q.getQuestion() + " " + q.getAnswer();
+            assertTrue(combined.toLowerCase().contains(searchText.toLowerCase()));
+        }
+    }
+
+    @Test
+    public void testFindQuestionsNoResultsThrows() {
+        String searchText = "такого слова нет в вопросах";
+        assertThrows(QuestionsNotFoundException.class, () -> {
+            javaQuestionService.findQuestions(searchText);
+        });
+    }
 }
