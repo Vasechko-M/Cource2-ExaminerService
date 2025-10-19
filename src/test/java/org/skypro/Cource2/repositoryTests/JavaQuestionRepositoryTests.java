@@ -17,7 +17,7 @@ public class JavaQuestionRepositoryTests {
     public void setUp() {
         repository = new JavaQuestionRepository();
     }
-
+//во всех тестах сделать проверку в вызыывается ли метод и если вызывается, то только 1 раз
     @Test
     public void testAddQuestion_shouldAddQuestion() {
         Question question = new Question("Вопрос 1", "Ответ 1");
