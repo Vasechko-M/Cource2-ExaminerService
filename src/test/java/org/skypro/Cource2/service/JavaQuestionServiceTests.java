@@ -1,4 +1,4 @@
-package org.skypro.Cource2.serviceTests;
+package org.skypro.Cource2.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,6 @@ import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.exception.QuestionAlreadyExistsException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.skypro.Cource2.repository.JavaQuestionRepository;
-import org.skypro.Cource2.service.JavaQuestionService;
 
 import java.util.*;
 

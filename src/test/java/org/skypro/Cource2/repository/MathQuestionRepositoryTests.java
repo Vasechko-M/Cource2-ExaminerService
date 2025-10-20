@@ -1,9 +1,8 @@
-package org.skypro.Cource2.repositoryTests;
+package org.skypro.Cource2.repository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
-import org.skypro.Cource2.repository.MathQuestionRepository;
 
 import java.util.List;
 
