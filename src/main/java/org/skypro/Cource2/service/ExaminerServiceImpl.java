@@ -4,53 +4,56 @@ import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.exception.QuestionBadRequestException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 @Service
 public class ExaminerServiceImpl implements ExaminerService {
 
-    private final QuestionServices javaQuestionsService;
-    private final QuestionServices mathQuestionsService;
+    private final Map<String, QuestionServices> questionServicesMap;
     private final Random random;
 
-    public ExaminerServiceImpl(
-            @Qualifier("javaQuestionService") QuestionServices javaQuestionsService,
-            @Qualifier("mathQuestionService") QuestionServices mathQuestionsService) {
-        this.javaQuestionsService = javaQuestionsService;
-        this.mathQuestionsService = mathQuestionsService;
+    public ExaminerServiceImpl(@Qualifier("questionServicesMap") Map<String, QuestionServices> questionServicesMap) {
+        this.questionServicesMap = questionServicesMap;
         this.random = new Random();
     }
-    public Question getRandomQuestionFromJava() {
-        return javaQuestionsService.getRandomQuestion();
-    }
 
-    public Question getRandomQuestionFromMath() {
-        return mathQuestionsService.getRandomQuestion();
+    @Override
+    public Question getRandomQuestion() {
+        List<QuestionServices> services = new ArrayList<>(questionServicesMap.values());
+        int index = random.nextInt(services.size());
+        return services.get(index).getRandomQuestion();
     }
 
     @Override
     public Collection<Question> getQuestions(int amount) {
-
         if (amount < 0) {
             throw new QuestionBadRequestException("Количество вопросов должно быть положительным");
         }
-        List<Question> allQuestions = new ArrayList<>();
-        allQuestions.addAll(javaQuestionsService.getAll());
-        allQuestions.addAll(mathQuestionsService.getAll());
-        if (amount > allQuestions.size()) {
-            throw new QuestionsNotFoundException(
-                    "Запрошено больше вопросов, чем доступно. Запрошено: " + amount + ". Доступно: " + allQuestions.size());
+        if (amount == 0) {
+            return Collections.emptyList();
         }
 
+        List<QuestionServices> services = new ArrayList<>(questionServicesMap.values());
         Set<Question> result = new HashSet<>();
+        int maxAttempts = amount * 10;
+        int attempts = 0;
 
-        while (result.size() < amount) {
-            int index = random.nextInt(allQuestions.size());
-            result.add(allQuestions.get(index));
+        while (result.size() < amount && attempts < maxAttempts) {
+            attempts++;
+            int serviceIndex = random.nextInt(services.size());
+            QuestionServices service = services.get(serviceIndex);
+            try {
+                Question q = service.getRandomQuestion();
+                result.add(q);
+            } catch (Exception e) {
+            }
         }
+
+        if (result.size() < amount) {
+            throw new QuestionsNotFoundException("Запрошено больше вопросов, чем доступно");
+        }
+
         return result;
     }
 }

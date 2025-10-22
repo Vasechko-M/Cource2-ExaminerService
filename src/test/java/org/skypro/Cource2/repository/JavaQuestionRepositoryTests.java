@@ -1,6 +1,7 @@
 package org.skypro.Cource2.repository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
 
@@ -16,8 +17,8 @@ public class JavaQuestionRepositoryTests {
     public void setUp() {
         repository = new JavaQuestionRepository();
     }
-//во всех тестах сделать проверку в вызыывается ли метод и если вызывается, то только 1 раз
     @Test
+    @DisplayName("Добавление вопроса вызывает его появление в репозитории")
     public void testAddQuestion_shouldAddQuestion() {
         Question question = new Question("Вопрос 1", "Ответ 1");
         repository.add(question);
@@ -27,6 +28,7 @@ public class JavaQuestionRepositoryTests {
     }
 
     @Test
+    @DisplayName("Добавление null не выбрасывает исключение и не добавляет вопрос")
     public void testAddNullQuestion_shouldNotThrowOrAdd() {
         assertDoesNotThrow(() -> repository.add(null), "Добавление null не должно выбрасывать исключение");
 
@@ -46,6 +48,7 @@ public class JavaQuestionRepositoryTests {
     }
 
     @Test
+    @DisplayName("Удаление существующего вопроса возвращает true и убирает его")
     public void testRemoveNonExistingQuestion_shouldReturnFalse() {
         Question question = new Question("Вопрос отсутствует", "Ответ");
 
@@ -55,6 +58,7 @@ public class JavaQuestionRepositoryTests {
     }
 
     @Test
+    @DisplayName("Удаление несуществующего вопроса возвращает false")
     public void testGetAll_shouldReturnCopy() {
         Question question = new Question("Вопрос 3", "Ответ 3");
         repository.add(question);
