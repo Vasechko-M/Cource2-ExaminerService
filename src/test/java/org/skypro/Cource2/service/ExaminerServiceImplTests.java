@@ -2,10 +2,12 @@ package org.skypro.Cource2.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.exception.QuestionBadRequestException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
+
 
 import java.util.*;
 
@@ -117,29 +119,30 @@ public class ExaminerServiceImplTests {
         verify(mathQuestionsService, times(0)).getRandomQuestion();
     }
 
-    @Test
+    @RepeatedTest(10)
     @DisplayName("При запросе 1 вопроса, возвращает 1 вопрос")
     public void testGetQuestions_AmountOne_ReturnsOneQuestion() {
 
         Question q1 = new Question("Q1", "A1");
         Question q2 = new Question("Q2", "A2");
         Question q3 = new Question("Q3", "A3");
+        Question q4 = new Question("Q4", "A4");
 
         List<Question> javaQuestions = Arrays.asList(q1, q2);
-        List<Question> mathQuestions = Collections.singletonList(q3);
+        List<Question> mathQuestions = List.of(q3, q4);
 
         when(javaQuestionsService.getAll()).thenReturn(javaQuestions);
         when(mathQuestionsService.getAll()).thenReturn(mathQuestions);
-        when(javaQuestionsService.getRandomQuestion()).thenReturn(q1);
+
+        lenient().when(javaQuestionsService.getRandomQuestion()).thenReturn(q1);
+        lenient().when(mathQuestionsService.getRandomQuestion()).thenReturn(q3);
 
         Collection<Question> result = examinerService.getQuestions(1);
 
         assertEquals(1, result.size(), "Должен вернуться один вопрос");
-        assertTrue(result.contains(q1) || result.contains(q2) || result.contains(q3), // вот в этом месте у меня тест периодически падает
-                "Результат должен содержать один из вопросов");                                 // что только ни пробовала, не могу решение найти ((
-                                                                                                // если я буду статически вопросы выбирать, то сам смысл рандомного (метод getRandomQuestion) выбора пропадает
-        verify(javaQuestionsService, times(1)).getRandomQuestion();
-        verify(mathQuestionsService, times(0)).getRandomQuestion();
+        assertTrue(result.contains(q1)  || result.contains(q3),
+                "Результат должен содержать один из вопросов");
+
     }
 
 
