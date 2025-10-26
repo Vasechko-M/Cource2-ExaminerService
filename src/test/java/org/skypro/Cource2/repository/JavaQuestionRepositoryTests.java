@@ -1,26 +1,26 @@
-package org.skypro.Cource2.repositoryTests;
+package org.skypro.Cource2.repository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
-import org.skypro.Cource2.repository.MathQuestionRepository;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MathQuestionRepositoryTests {
+public class JavaQuestionRepositoryTests {
 
-    private MathQuestionRepository repository;
+    private JavaQuestionRepository repository;
 
     @BeforeEach
     public void setUp() {
-        repository = new MathQuestionRepository();
+        repository = new JavaQuestionRepository();
     }
-
     @Test
+    @DisplayName("Добавление вопроса вызывает его появление в репозитории")
     public void testAddQuestion_shouldAddQuestion() {
-        Question question = new Question("Что такое 2+2?", "4");
+        Question question = new Question("Вопрос 1", "Ответ 1");
         repository.add(question);
 
         List<Question> all = repository.getAll();
@@ -28,6 +28,7 @@ public class MathQuestionRepositoryTests {
     }
 
     @Test
+    @DisplayName("Добавление null не выбрасывает исключение и не добавляет вопрос")
     public void testAddNullQuestion_shouldNotThrowOrAdd() {
         assertDoesNotThrow(() -> repository.add(null), "Добавление null не должно выбрасывать исключение");
 
@@ -37,7 +38,7 @@ public class MathQuestionRepositoryTests {
 
     @Test
     public void testRemoveExistingQuestion_shouldReturnTrueAndRemove() {
-        Question question = new Question("Чему равен квадрат числа 3?", "9");
+        Question question = new Question("Вопрос 2", "Ответ 2");
         repository.add(question);
 
         boolean removed = repository.remove(question);
@@ -47,6 +48,7 @@ public class MathQuestionRepositoryTests {
     }
 
     @Test
+    @DisplayName("Удаление существующего вопроса возвращает true и убирает его")
     public void testRemoveNonExistingQuestion_shouldReturnFalse() {
         Question question = new Question("Вопрос отсутствует", "Ответ");
 
@@ -56,8 +58,9 @@ public class MathQuestionRepositoryTests {
     }
 
     @Test
+    @DisplayName("Удаление несуществующего вопроса возвращает false")
     public void testGetAll_shouldReturnCopy() {
-        Question question = new Question("Что такое площадь круга?", "πr²");
+        Question question = new Question("Вопрос 3", "Ответ 3");
         repository.add(question);
 
         List<Question> first = repository.getAll();
@@ -66,7 +69,6 @@ public class MathQuestionRepositoryTests {
         assertNotSame(first, second, "Метод getAll должен возвращать новый объект списка");
         assertEquals(first, second, "Возвращаемые списки должны быть равны по содержимому");
 
-        assertThrows(UnsupportedOperationException.class, () -> first.add(new Question("Новый вопрос", "Новый ответ")),
-                "Полученный список должен быть неизменяемым");
+        assertThrows(UnsupportedOperationException.class, () -> first.add(new Question("x", "y")));
     }
 }

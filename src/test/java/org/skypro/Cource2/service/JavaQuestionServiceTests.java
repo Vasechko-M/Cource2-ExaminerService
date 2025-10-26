@@ -1,12 +1,12 @@
-package org.skypro.Cource2.serviceTests;
+package org.skypro.Cource2.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.exception.QuestionAlreadyExistsException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
 import org.skypro.Cource2.repository.JavaQuestionRepository;
-import org.skypro.Cource2.service.JavaQuestionService;
 
 import java.util.*;
 
@@ -22,6 +22,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Начальный набор вопросов не пустой")
     public void testInitialQuestionsNotEmpty() {
         Collection<Question> questions = javaQuestionService.getAll();
         assertFalse(questions.isEmpty(), "Начальный набор вопросов не должен быть пустым");
@@ -29,6 +30,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("При добавлении вопроса по строкам, он появляется в коллекции")
     public void testAddQuestionByStrings() {
         Question newQuestion = javaQuestionService.add(new Question("Новый вопрос?", "Новый ответ"));
         Collection<Question> all = javaQuestionService.getAll();
@@ -36,6 +38,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("При добавлении вопроса по объекту, он появляется в коллекции")
     public void testAddQuestionByQuestionObject() {
         Question question = new Question("Вопрос", "Ответ");
         Question added = javaQuestionService.add(question);
@@ -44,6 +47,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Удаление существующего вопроса должно возвращать его и убирать из коллекции")
     public void testRemoveExistingQuestion() {
         Question question = new Question("Удаляемый вопрос", "Ответ");
         javaQuestionService.add(question);
@@ -53,6 +57,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Удаление отсутствующего вопроса вызывает исключение")
     public void testRemoveNonExistingQuestion() {
         Question question = new Question("Отсутствующий вопрос", "Ответ");
         assertThrows(QuestionsNotFoundException.class, () -> {
@@ -61,6 +66,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Метод getAll возвращает копию коллекции")
     public void testGetAllReturnsCopy() {
         Collection<Question> first = javaQuestionService.getAll();
         Collection<Question> second = javaQuestionService.getAll();
@@ -69,6 +75,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Метод getRandomQuestion возвращает вопрос из коллекции")
     public void testGetRandomQuestionReturnsQuestion() {
         Question randomQuestion = javaQuestionService.getRandomQuestion();
         assertNotNull(randomQuestion, "getRandomQuestion не должен возвращать null");
@@ -76,17 +83,15 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Если вопросов нет, getRandomQuestion выбрасывает исключение")
     public void testGetRandomQuestionThrowsIfEmpty() {
-
-        for (Question q : new ArrayList<>(javaQuestionService.getAll())) {
-            javaQuestionService.remove(q);
-        }
-
+        javaQuestionService.getAll().forEach(q -> javaQuestionService.remove(q));
         assertThrows(QuestionsNotFoundException.class, () -> javaQuestionService.getRandomQuestion(),
                 "При отсутствии вопросов должно выбрасываться QuestionsNotFoundException");
     }
 
     @Test
+    @DisplayName("Можно добавить новый вопрос по строкам, он появляется в коллекции")
     public void testAddNewQuestion() {
         String qText = "Что такое JVM?";
         String aText = "Java Virtual Machine";
@@ -100,6 +105,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Добавление дубликата вопроса вызывает исключение")
     public void testAddDuplicateQuestionThrows() {
         Question existing = javaQuestionService.getAll().iterator().next();
         assertThrows(QuestionAlreadyExistsException.class, () -> {
@@ -107,6 +113,7 @@ public class JavaQuestionServiceTests {
         });
     }
     @Test
+    @DisplayName("Поиск вопросов по строке возвращает совпадающие")
     public void testFindQuestionsReturnsMatching() {
         String searchText = "Java";
         List<Question> results = javaQuestionService.findQuestions(searchText);
@@ -118,6 +125,7 @@ public class JavaQuestionServiceTests {
     }
 
     @Test
+    @DisplayName("Поиск по несуществующему слову вызывает исключение")
     public void testFindQuestionsNoResultsThrows() {
         String searchText = "такого слова нет в вопросах";
         assertThrows(QuestionsNotFoundException.class, () -> {

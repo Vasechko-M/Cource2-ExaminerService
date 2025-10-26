@@ -29,10 +29,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
+
     @ExceptionHandler(QuestionBadRequestException.class)
     public ResponseEntity<String> handleQuestionsBedRequestException(QuestionBadRequestException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(OperationNotAllowedException.class)
+    public ResponseEntity<String> handleOperationNotAllowed(OperationNotAllowedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(ex.getMessage());
     }
 }

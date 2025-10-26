@@ -1,19 +1,17 @@
-package org.skypro.Cource2.serviceTests;
+package org.skypro.Cource2.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.skypro.Cource2.domain.Question;
 import org.skypro.Cource2.exception.QuestionBadRequestException;
 import org.skypro.Cource2.exception.QuestionsNotFoundException;
-import org.skypro.Cource2.service.ExaminerServiceImpl;
-import org.skypro.Cource2.service.QuestionServices;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ExaminerServiceImplTests {
@@ -26,12 +24,16 @@ public class ExaminerServiceImplTests {
     public void setUp() {
         javaQuestionsService = mock(QuestionServices.class);
         mathQuestionsService = mock(QuestionServices.class);
-        examinerService = new ExaminerServiceImpl(javaQuestionsService, mathQuestionsService);
+
+        Map<String, QuestionServices> servicesMap = new HashMap<>();
+        servicesMap.put("java", javaQuestionsService);
+        servicesMap.put("math", mathQuestionsService);
+
+        examinerService = new ExaminerServiceImpl(servicesMap);
     }
 
-
-
     @Test
+    @DisplayName("При запросе большего количества вопросов, чем доступно, бросает исключение")
     public void testGetQuestions_LargerAmountThanAvailable_ThrowsException() {
         List<Question> questions = Arrays.asList(
                 new Question("Q1", "A1"),
@@ -50,16 +52,11 @@ public class ExaminerServiceImplTests {
 
 
     @Test
+    @DisplayName("Возвращает правильное количество вопросов(при допустимом количестве)")
     public void testGetQuestions_ValidAmount_ReturnsCorrectNumberOfQuestions() {
         Question q1 = new Question("Q1", "A1");
         Question q2 = new Question("Q2", "A2");
         Question q3 = new Question("Q3", "A3");
-
-        List<Question> javaQuestions = Arrays.asList(q1, q2);
-        List<Question> mathQuestions = Arrays.asList(q3);
-
-        when(javaQuestionsService.getAll()).thenReturn(javaQuestions);
-        when(mathQuestionsService.getAll()).thenReturn(mathQuestions);
 
         when(javaQuestionsService.getRandomQuestion())
                 .thenReturn(q1)
@@ -70,79 +67,87 @@ public class ExaminerServiceImplTests {
         Collection<Question> result = examinerService.getQuestions(2);
 
         assertEquals(2, result.size(), "Должно вернуться ровно 2 вопроса");
-        assertTrue(result.contains(q1) || result.contains(q2), "Должен содержать Q1 или Q2");
+        assertTrue(result.stream().allMatch(q -> q.equals(q1) || q.equals(q2) || q.equals(q3)),
+                "Все вопросы должны быть из доступных");
 
-        verify(javaQuestionsService, times(1)).getAll();
-        verify(mathQuestionsService, times(1)).getAll();
+        verify(javaQuestionsService, atLeast(1)).getRandomQuestion();
+        verify(mathQuestionsService, atLeast(1)).getRandomQuestion();
     }
 
 
     @Test
+    @DisplayName("Проверяет возвращаются ли уникальные вопросы")
     public void testGetQuestions_AmountEqualsAvailable_ReturnsUniqueQuestions() {
         Question q1 = new Question("Q1", "A1");
         Question q2 = new Question("Q2", "A2");
         Question q3 = new Question("Q3", "A3");
-        List<Question> javaQuestions = Arrays.asList(q1, q2);
-        List<Question> mathQuestions = Arrays.asList(q3);
+        Question q4 = new Question("Q4", "A4");
 
-        when(javaQuestionsService.getAll()).thenReturn(javaQuestions);
-        when(mathQuestionsService.getAll()).thenReturn(mathQuestions);
+        when(javaQuestionsService.getRandomQuestion())
+                .thenReturn(q1)
+                .thenReturn(q2);
 
-        Collection<Question> result = examinerService.getQuestions(3);
+        when(mathQuestionsService.getRandomQuestion())
+                .thenReturn(q3)
+                .thenReturn(q4);
 
-        assertEquals(3, result.size(), "Должно вернуться ровно 3 вопроса");
+        Collection<Question> result = examinerService.getQuestions(2);
+
+        assertEquals(2, result.size(), "Должно вернуться ровно 2 вопроса");
 
         Set<Question> resultSet = new HashSet<>(result);
-        assertEquals(3, resultSet.size(), "Все вопросы должны быть уникальными");
+        assertEquals(2, resultSet.size(), "Все вопросы должны быть уникальными");
 
-        verify(javaQuestionsService, times(1)).getAll();
-        verify(mathQuestionsService, times(1)).getAll();
+        verify(javaQuestionsService, atLeast(1)).getRandomQuestion();
+        verify(mathQuestionsService, atLeast(1)).getRandomQuestion();
+
     }
 
 
     @Test
+    @DisplayName("При запросе 0 вопросов, возвращает пустую коллекцию")
     public void testGetQuestions_AmountZero_ReturnsEmptyCollection() {
-        List<Question> javaQuestions = Arrays.asList(
-                new Question("Q1", "A1"),
-                new Question("Q2", "A2")
-        );
-        when(javaQuestionsService.getAll()).thenReturn(javaQuestions);
-        when(mathQuestionsService.getAll()).thenReturn(Collections.emptyList());
+
+        when(javaQuestionsService.getRandomQuestion()).thenReturn(new Question("Q1", "A1"));
+        when(mathQuestionsService.getRandomQuestion()).thenReturn(new Question("Q2", "A2"));
 
         Collection<Question> result = examinerService.getQuestions(0);
 
         assertEquals(0, result.size(), "Должна вернуться пустая коллекция");
 
-        verify(javaQuestionsService, times(1)).getAll();
         verify(javaQuestionsService, times(0)).getRandomQuestion();
         verify(mathQuestionsService, times(0)).getRandomQuestion();
     }
 
-@Test
+    @RepeatedTest(10)
+    @DisplayName("При запросе 1 вопроса, возвращает 1 вопрос")
     public void testGetQuestions_AmountOne_ReturnsOneQuestion() {
 
         Question q1 = new Question("Q1", "A1");
         Question q2 = new Question("Q2", "A2");
         Question q3 = new Question("Q3", "A3");
+        Question q4 = new Question("Q4", "A4");
 
         List<Question> javaQuestions = Arrays.asList(q1, q2);
-        List<Question> mathQuestions = Collections.singletonList(q3);
+        List<Question> mathQuestions = List.of(q3, q4);
 
         when(javaQuestionsService.getAll()).thenReturn(javaQuestions);
         when(mathQuestionsService.getAll()).thenReturn(mathQuestions);
 
+        lenient().when(javaQuestionsService.getRandomQuestion()).thenReturn(q1);
+        lenient().when(mathQuestionsService.getRandomQuestion()).thenReturn(q3);
+
         Collection<Question> result = examinerService.getQuestions(1);
 
         assertEquals(1, result.size(), "Должен вернуться один вопрос");
-        assertTrue(result.contains(q1) || result.contains(q2) || result.contains(q3),
+        assertTrue(result.contains(q1)  || result.contains(q3),
                 "Результат должен содержать один из вопросов");
 
-        verify(javaQuestionsService, times(1)).getAll();
-        verify(mathQuestionsService, times(1)).getAll();
     }
 
 
     @Test
+    @DisplayName("При отрицательном запросе выбрасывается исключение")
     public void testGetQuestions_NegativeAmount_ThrowsException() {
         QuestionBadRequestException exception = assertThrows(QuestionBadRequestException.class, () -> {
             examinerService.getQuestions(-1);
@@ -154,5 +159,4 @@ public class ExaminerServiceImplTests {
         verify(javaQuestionsService, never()).getRandomQuestion();
         verify(mathQuestionsService, never()).getRandomQuestion();
     }
-
 }
